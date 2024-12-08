@@ -32,8 +32,10 @@ jobs:
          
     runs-on: ${{ matrix.os }}
     steps:
-      
       - uses: actions/checkout@v4
+      - name: Install Perl
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get -y update && sudo apt-get install -y perl 
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: steamopenssl
