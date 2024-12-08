@@ -1,4 +1,3 @@
-
 name: Release
 
 permissions:
@@ -8,38 +7,38 @@ on:
   release:
     types: [created]
 
-    
 jobs:
-  release:
-    name: Release - ${{ matrix.platform.os-name }}
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/create-gh-release-action@v1
+        with:
+          changelog: CHANGELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-assets:
+    needs: create-release
     strategy:
       matrix:
-        platform:
-          - os-name: Linux-x86_64
-            runs-on: ubuntu-20.04
-            target: x86_64-unknown-linux-musl
-
-          - os-name: Linux-aarch64
-            runs-on: ubuntu-20.04
-            target: aarch64-unknown-linux-musl
-
-          - os-name: Windows-x86_64
-            runs-on: windows-latest
-            target: x86_64-pc-windows-msvc
-
-    runs-on: ${{ matrix.platform.runs-on }}
+        include:
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+          - target: x86_64-pc-windows-gnu
+            os: ubuntu-latest
+  
+         
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Build binary
-        uses: houseabsolute/actions-rust-cross@v0
+      - uses: actions/checkout@v4
+      - name: windows-build
+        if: matrix.target == 'x86_64-pc-windows-gnu'
+        run: sudo apt-get update && sudo apt-get install -y perl make gcc-mingw-w64
+      - uses: taiki-e/upload-rust-binary-action@v1
         with:
-          command: ${{ matrix.platform.command }}
-          target: ${{ matrix.platform.target }}
-          args: "--locked --release"
-          strip: true
-      - name: Publish artifacts and release
-        uses: houseabsolute/actions-rust-release@v0
-        with:
-          executable-name: ubi
-          target: ${{ matrix.platform.target }}
+          bin: steamopenssl
+          target: ${{ matrix.target }}
+          archive: $bin-$tag-$target
+          token: ${{ secrets.GITHUB_TOKEN }}
