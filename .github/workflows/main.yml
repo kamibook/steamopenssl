@@ -26,16 +26,11 @@ jobs:
             os: ubuntu-latest
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
-          - target: x86_64-pc-windows-gnu
-            os: ubuntu-latest
-  
+          
          
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: install
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y -q perl make gcc-mingw-w64 
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: steamopenssl
