@@ -1,0 +1,14 @@
+[package]
+name = "steamopenssl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+openssl = { version = "0.10.68", features = ["vendored"] }
+
+[profile.release]
+strip = true 
+opt-level = "z"
+lto = true
+panic = "abort"
+codegen-units = 1
